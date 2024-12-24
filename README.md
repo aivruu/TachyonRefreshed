@@ -1,73 +1,105 @@
 # Tachyon
-A Easy to Use, Fast, Cross-Version schematic library.
 
-Stop having to depend on large plugins like WorldEdit or Limiting Libraries like NeoSchematic. Tachyon allows you to create, save, load & paste schematics easily & Efficiently.
+A high-performance, cross-version schematic library for Minecraft servers that provides an efficient alternative to WorldEdit for handling schematics.
 
-## Features
-- [x] 🟩 **Easy to Use** 🟩
-    - Extremely easy to use, just implement tachyon and look at our simple usage examples!
-  
-- [x] 🌎 **1.8 - 1.20 Version Support** 🌎
-    - Create Schematics on any version you please. It is just as fast if not faster on some versions 😉
-  
-- [x] 💎 **Much Smaller than WorldEdit** 💎
-    - Stop having to depend on a whole large plugin like worldedit or having to use other schematic libraries that are inefficient or sacrifice version support
-  
-- [x] 🌟 **Faster than WorldEdit** 🌟
-    - Tachyon's Pasting system is simply much faster than worldedit :)
-  
-- [x] 🚀 **Fully Asynchronous & Zero TPS Impact** 🚀
-    - There won't be any TPS loss no matter the amount of blocks being set. This is because Tachyon places blocks using NMS, thereby bypassing inefficient bukkit methods.
-  
-- [x] 📜 **Custom file extension for schematics 📜**
-    - Tachyon uses a custom file extension for schematics which is ".tachyon" by default but you may set it to whatever you'd like by rewriting 1 string.
-  
-- [x] ⚡ **Hyperfast loading & saving of schematics** ⚡
-    - Significantly greater speeds for saving and loading schematics, sometimes upto 10x faster than regular java serialization.
-- [x] 🛠️ **Schematic Editing** 🛠️
-    - We support direct editing of schematics without having to paste them. This includes:
-      - [x] **Rotations** - Rotate the schematic by any angle multiple of 90 degrees.
-      - [x] **Flipping** - Flip the schematic up , down, left or right.
-      - [x] **Block Replacements** - Replace any block type in the schematic.
+## 🌟 Key Features
 
-## TODO
-- [ ] Add Version info for schematics
-- [ ] Fix block rotations
+### Performance & Efficiency
+- **Zero TPS Impact**: Utilizes NMS (Native Minecraft Server) for block placement, bypassing Bukkit methods
+- **Fully Asynchronous Operations**: All operations (create/save/load/paste) run asynchronously
+- **Lightning-Fast Performance**: 
+  - Up to 10x faster than traditional Java serialization for loading/saving
+  - Faster block placement compared to WorldEdit
+  - Optimized for large schematics
 
+### Compatibility & Integration
+- **Cross-Version Support**: Compatible with Minecraft versions 1.8 through 1.20
+- **Lightweight**: Minimal dependencies, significantly smaller than WorldEdit
+- **Custom File Format**: Uses `.tachyon` extension (customizable)
 
-## Setup
+### Schematic Manipulation
+- **Creation**: Create schematics from selected regions
+- **Storage**: Save and load schematics efficiently
+- **Editing Capabilities**:
+  - **Rotation**: Rotate schematics in 90-degree increments
+  - **Flipping**: Flip in any direction (up/down/left/right)
+  - **Block Replacement**: Replace specific block types within schematics
+- **Paste Options**: Control air block handling during paste operations
 
-**Manual**\
-Just Copy the files into your project.
+## 📦 Installation
 
-## Usage
+### Manual Installation
+1. Download the latest release
+2. Add the JAR to your project dependencies
+3. Include the library in your plugin.yml
 
-### Creating a Schematic from locations
-```java
-Schematic.createAsync(pos1, pos2, origin);
+### Gradle
+```gradle
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'com.github.YourUsername:Tachyon:VERSION'
+}
 ```
 
-### Saving a Schematic
+## 🚀 Quick Start Guide
+
+### Basic Usage
+
+1. **Creating a Schematic**
 ```java
-Schematic schematic = /* get your schematic */
-File file = new File(dir, filename + Schematic.getFileExtension());
-schematic.saveAsync(file);
+// From locations
+Location pos1 = /* first corner */;
+Location pos2 = /* second corner */;
+Location origin = /* origin point */;
+Schematic.createAsync(pos1, pos2, origin).thenAccept(schematic -> {
+    // Schematic created successfully
+});
+
+// From file
+File file = new File("plugins/YourPlugin/schematics/house.tachyon");
+Schematic.createAsync(file).thenAccept(schematic -> {
+    // Schematic loaded successfully
+});
 ```
 
-### Loading/Creating a Schematic from File
+2. **Saving a Schematic**
 ```java
-File file = new File(getDataFolder(), "schematics/" + filename + Schematic.getFileExtension());
-Schematic.createAsync(file);
+File saveFile = new File("plugins/YourPlugin/schematics/build.tachyon");
+schematic.saveAsync(saveFile).thenRun(() -> {
+    // Schematic saved successfully
+});
 ```
 
-
-### Pasting a Schematic
+3. **Pasting a Schematic**
 ```java
-Schematic schematic = /* get your schematic */
-schematic.pasteAsync(pasteLocation, true);  // boolean ignoreAir blocks
+Location pasteLocation = /* where to paste */;
+schematic.pasteAsync(pasteLocation, true) // true = ignore air blocks
+    .thenRun(() -> {
+        // Paste completed successfully
+    });
 ```
 
-### Example plugin
+### Advanced Operations
+
+1. **Schematic Manipulation**
+```java
+// Rotate the schematic
+schematic.rotate(90); // Rotates 90 degrees clockwise
+
+// Flip the schematic
+schematic.flip("up");    // Flips upward
+schematic.flip("down");  // Flips downward
+schematic.flip("left");  // Flips left
+schematic.flip("right"); // Flips right
+
+// Get block count
+int totalBlocks = schematic.getBlockCount();
+```
+
+## 🔧 Complete Example Plugin
 
 ```java
 package me.athish.tachyon;
@@ -220,8 +252,43 @@ public final class ExamplePlugin extends JavaPlugin {
 }
 ```
 
-## Credits
-- [BlockChanger](https://github.com/TheGaming999/BlockChanger) by TheGaming999
+## ⚙️ Configuration
 
+The default file extension is `.tachyon`, but you can customize it in your implementation:
 
+```java
+// Custom implementation of SchematicFactory
+public class CustomSchematicFactory implements SchematicFactory {
+    @Override
+    public String getFileExtension() {
+        return ".myext";
+    }
+    // ... other implementations
+}
+```
 
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Credits
+- [BlockChanger](https://github.com/TheGaming999/BlockChanger) by TheGaming999 - For block manipulation utilities
+
+## 🔄 Version History
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of changes.
+
+## 🎯 Roadmap
+- [ ] Add version info for schematics
+- [ ] Fix block rotations
+- [ ] Add block data manipulation
+- [ ] Support for entities
+- [ ] Biome copying
