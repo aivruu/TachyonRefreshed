@@ -1,9 +1,9 @@
-package es.redactado.tachyonRefreshed;
+package com.github.Reddishye.tachyonRefreshed;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import es.redactado.tachyonRefreshed.inject.TachyonModule;
+import com.github.Reddishye.tachyonRefreshed.inject.TachyonModule;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import org.bukkit.plugin.Plugin;
 

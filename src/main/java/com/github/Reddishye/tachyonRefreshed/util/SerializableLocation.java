@@ -1,4 +1,4 @@
-package es.redactado.tachyonRefreshed.util;
+package com.github.Reddishye.tachyonRefreshed.util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

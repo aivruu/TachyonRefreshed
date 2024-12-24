@@ -1,11 +1,11 @@
-package es.redactado.tachyonRefreshed.packet;
+package com.github.Reddishye.tachyonRefreshed.packet;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.google.inject.Singleton;
-import es.redactado.tachyonRefreshed.util.SerializableLocation;
+import com.github.Reddishye.tachyonRefreshed.util.SerializableLocation;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Bukkit;

@@ -1,4 +1,4 @@
-package es.redactado.tachyonRefreshed.api;
+package com.github.Reddishye.tachyonRefreshed.api;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

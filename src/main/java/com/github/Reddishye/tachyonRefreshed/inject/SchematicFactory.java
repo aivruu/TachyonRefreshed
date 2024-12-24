@@ -1,6 +1,6 @@
-package es.redactado.tachyonRefreshed.inject;
+package com.github.Reddishye.tachyonRefreshed.inject;
 
-import es.redactado.tachyonRefreshed.api.Schematic;
+import com.github.Reddishye.tachyonRefreshed.api.Schematic;
 import org.bukkit.Location;
 
 public interface SchematicFactory {

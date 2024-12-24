@@ -1,10 +1,10 @@
-package es.redactado.tachyonRefreshed.core;
+package com.github.Reddishye.tachyonRefreshed.core;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import es.redactado.tachyonRefreshed.api.Schematic;
-import es.redactado.tachyonRefreshed.packet.BlockChangePacketSender;
-import es.redactado.tachyonRefreshed.util.SerializableLocation;
+import com.github.Reddishye.tachyonRefreshed.api.Schematic;
+import com.github.Reddishye.tachyonRefreshed.packet.BlockChangePacketSender;
+import com.github.Reddishye.tachyonRefreshed.util.SerializableLocation;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class TachyonSchematic implements Schematic {

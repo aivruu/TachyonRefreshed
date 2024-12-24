@@ -1,10 +1,10 @@
-package es.redactado.tachyonRefreshed.core;
+package com.github.Reddishye.tachyonRefreshed.core;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import es.redactado.tachyonRefreshed.api.Schematic;
-import es.redactado.tachyonRefreshed.api.SchematicService;
-import es.redactado.tachyonRefreshed.packet.BlockChangePacketSender;
+import com.github.Reddishye.tachyonRefreshed.api.Schematic;
+import com.github.Reddishye.tachyonRefreshed.api.SchematicService;
+import com.github.Reddishye.tachyonRefreshed.packet.BlockChangePacketSender;
 import org.bukkit.Location;
 
 import java.io.File;
