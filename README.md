@@ -1,11 +1,11 @@
-# Tachyon
+# Tachyon Refreshed
 
 A high-performance, cross-version schematic library for Minecraft servers that provides an efficient alternative to WorldEdit for handling schematics.
 
 ## 🌟 Key Features
 
 ### Performance & Efficiency
-- **Zero TPS Impact**: Utilizes NMS (Native Minecraft Server) for block placement, bypassing Bukkit methods
+- **Zero TPS Impact**: Utilizes PacketEvents for block placement, bypassing Bukkit methods
 - **Fully Asynchronous Operations**: All operations (create/save/load/paste) run asynchronously
 - **Lightning-Fast Performance**: 
   - Up to 10x faster than traditional Java serialization for loading/saving
@@ -40,7 +40,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.YourUsername:Tachyon:VERSION'
+    implementation 'com.github.Reddishye:TachyonRefreshed:VERSION'
 }
 ```
 
