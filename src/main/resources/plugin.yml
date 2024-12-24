@@ -1,7 +1,16 @@
 name: Tachyon
-main: me.athish.tachyon.ExamplePlugin
-version: 1.0
-description: Implementation of the Tachyon Schematic library.
+version: '1.0'
+main: es.redactado.tachyonRefreshed.TachyonLibrary
+api-version: '1.13'
+description: A high-performance schematic library using PacketEvents and Guice
+author: redactado
+website: https://github.com/redactado/Tachyon-paper
+
+libraries:
+  - io.github.retrooper.packetevents:spigot:2.2.0
+  - com.google.inject:guice:7.0.0
+  - com.google.inject.extensions:guice-assistedinject:7.0.0
+
 commands:
   schematic:
     description: Schematic manipulation command

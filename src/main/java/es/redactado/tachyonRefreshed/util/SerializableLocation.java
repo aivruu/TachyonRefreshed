@@ -1,4 +1,4 @@
-package me.athish.tachyon;
+package es.redactado.tachyonRefreshed.util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -65,4 +65,32 @@ public class SerializableLocation implements Serializable {
         return pitch;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((worldName == null) ? 0 : worldName.hashCode());
+        long temp;
+        temp = Double.doubleToLongBits(x);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(y);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(z);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        SerializableLocation other = (SerializableLocation) obj;
+        if (worldName == null) {
+            if (other.worldName != null) return false;
+        } else if (!worldName.equals(other.worldName)) return false;
+        if (Double.doubleToLongBits(x) != Double.doubleToLongBits(other.x)) return false;
+        if (Double.doubleToLongBits(y) != Double.doubleToLongBits(other.y)) return false;
+        if (Double.doubleToLongBits(z) != Double.doubleToLongBits(other.z)) return false;
+        return true;
+    }
 }
