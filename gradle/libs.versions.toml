@@ -2,7 +2,7 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-org-jetbrains-annotations = "24.1.0"
+org-jetbrains-annotations = "26.0.1"
 org-junit-jupiter-junit-jupiter-engine = "5.10.2"
 org-spigotmc-spigot-api = "1.21.4-R0.1-SNAPSHOT"
 
