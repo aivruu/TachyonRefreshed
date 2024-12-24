@@ -1,4 +1,5 @@
 # Tachyon Refreshed
+[![](https://jitpack.io/v/Reddishye/Tachyon-paper.svg)](https://jitpack.io/#Reddishye/Tachyon-paper)
 
 A high-performance, cross-version schematic library for Minecraft servers that provides an efficient alternative to WorldEdit for handling schematics.
 
