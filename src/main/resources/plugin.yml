@@ -1,12 +1,7 @@
 name: TachyonRefreshed
 version: '1.0'
 main: es.redactado.tachyonRefreshed.TachyonLibrary
-api-version: '1.13'
+api-version: '1.21'
 description: A high-performance schematic library using PacketEvents and Guice
 author: Redactado
 website: https://github.com/redactado/Tachyon-paper
-
-libraries:
-  - io.github.retrooper.packetevents:spigot:2.2.0
-  - com.google.inject:guice:7.0.0
-  - com.google.inject.extensions:guice-assistedinject:7.0.0
