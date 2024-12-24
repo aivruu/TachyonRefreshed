@@ -38,7 +38,7 @@ dependencies {
     implementation 'com.google.inject.extensions:guice-assistedinject:7.0.0'
 }
 
-group = 'es.redactado'
+group = 'com.github.redactado'
 version = '1.0'
 description = 'TachyonRefreshed'
 java.sourceCompatibility = JavaVersion.VERSION_21
@@ -48,22 +48,33 @@ java {
     withJavadocJar()
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                from components.java
-                groupId = 'com.github.redactado'
-                artifactId = 'TachyonRefreshed'
-                version = project.version
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+            artifactId = 'TachyonRefreshed'
+            version = project.version
+            
+            pom {
+                name = 'TachyonRefreshed'
+                description = 'A high-performance schematic library for Minecraft'
+                url = 'https://github.com/redactado/Tachyon-paper'
+                
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                
+                developers {
+                    developer {
+                        id = 'redactado'
+                        name = 'Redactado'
+                    }
+                }
             }
         }
-    }
-}
-
-sourceSets.configureEach { set ->
-    artifacts {
-        archives shadowJar
     }
 }
 
@@ -76,8 +87,16 @@ shadowJar {
     archiveBaseName.set('TachyonRefreshed')
     archiveClassifier.set('')
     archiveVersion.set('')
+    
+    // Relocate all dependencies
     relocate 'io.github.retrooper.packetevents', 'es.redactado.tachyonRefreshed.lib.packetevents'
     relocate 'com.google.inject', 'es.redactado.tachyonRefreshed.lib.guice'
+    relocate 'com.google.common', 'es.redactado.tachyonRefreshed.lib.guava'
+    relocate 'org.aopalliance', 'es.redactado.tachyonRefreshed.lib.aopalliance'
+    relocate 'javax.inject', 'es.redactado.tachyonRefreshed.lib.javax.inject'
+    
+    // Minimize the jar to remove unused classes
+    minimize()
 }
 
 tasks.withType(JavaCompile) {
@@ -88,6 +107,8 @@ tasks.withType(Javadoc) {
     options.encoding = 'UTF-8'
 }
 
+// Make the jar task depend on shadowJar and use its output
 jar {
-    from shadowJar.outputs
+    enabled = false
+    dependsOn(shadowJar)
 }

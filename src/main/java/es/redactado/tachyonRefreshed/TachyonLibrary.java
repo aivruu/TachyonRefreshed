@@ -5,32 +5,45 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import es.redactado.tachyonRefreshed.inject.TachyonModule;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 
-public final class TachyonLibrary extends JavaPlugin {
+public final class TachyonLibrary {
     private static TachyonLibrary instance;
-    private Injector injector;
+    private final Injector injector;
+    private final Plugin plugin;
+    private boolean ownedPacketEvents = false;
 
-    @Override
-    public void onLoad() {
-        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-        PacketEvents.getAPI().load();
-    }
-
-    @Override
-    public void onEnable() {
+    public TachyonLibrary(Plugin plugin) {
+        this.plugin = plugin;
         instance = this;
         
-        // Initialize PacketEvents
-        PacketEvents.getAPI().init();
+        // Check if PacketEvents is already initialized
+        if (!PacketEvents.getAPI().isInitialized()) {
+            // If not initialized, check if it's loaded as a plugin
+            Plugin packetEvents = plugin.getServer().getPluginManager().getPlugin("PacketEvents");
+            if (packetEvents == null) {
+                // No PacketEvents found, initialize our own
+                PacketEvents.setAPI(SpigotPacketEventsBuilder.build(plugin));
+                PacketEvents.getAPI().load();
+                PacketEvents.getAPI().init();
+                ownedPacketEvents = true;
+            } else {
+                // Use the existing PacketEvents instance
+                plugin.getLogger().info("Using PacketEvents from plugin: " + packetEvents.getName() + " v" + packetEvents.getDescription().getVersion());
+            }
+        } else {
+            plugin.getLogger().info("Using existing PacketEvents instance");
+        }
         
         // Setup Guice
         injector = Guice.createInjector(new TachyonModule());
     }
 
-    @Override
-    public void onDisable() {
-        PacketEvents.getAPI().terminate();
+    public void disable() {
+        // Only terminate PacketEvents if we created it
+        if (ownedPacketEvents) {
+            PacketEvents.getAPI().terminate();
+        }
     }
 
     public static TachyonLibrary getInstance() {
@@ -39,5 +52,9 @@ public final class TachyonLibrary extends JavaPlugin {
 
     public Injector getInjector() {
         return injector;
+    }
+
+    public Plugin getPlugin() {
+        return plugin;
     }
 }
