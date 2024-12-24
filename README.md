@@ -41,7 +41,7 @@ dependencies {
 
 shadowJar {
     // Relocate Tachyon and all its dependencies to your package
-    relocate 'es.redactado.tachyonRefreshed', 'your.package.lib.tachyon'
+    relocate 'com.github.Reddishye.tachyonRefreshed', 'your.package.lib.tachyon'
     // If using your own PacketEvents, relocate it too
     relocate 'io.github.retrooper.packetevents', 'your.package.lib.packetevents'
 }

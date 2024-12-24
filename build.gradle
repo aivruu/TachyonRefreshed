@@ -89,11 +89,11 @@ shadowJar {
     archiveVersion.set('')
     
     // Relocate all dependencies
-    relocate 'io.github.retrooper.packetevents', 'es.redactado.tachyonRefreshed.lib.packetevents'
-    relocate 'com.google.inject', 'es.redactado.tachyonRefreshed.lib.guice'
-    relocate 'com.google.common', 'es.redactado.tachyonRefreshed.lib.guava'
-    relocate 'org.aopalliance', 'es.redactado.tachyonRefreshed.lib.aopalliance'
-    relocate 'javax.inject', 'es.redactado.tachyonRefreshed.lib.javax.inject'
+    relocate 'io.github.retrooper.packetevents', 'com.github.Reddishye.tachyonRefreshed.lib.packetevents'
+    relocate 'com.google.inject', 'com.github.Reddishye.tachyonRefreshed.lib.guice'
+    relocate 'com.google.common', 'com.github.Reddishye.tachyonRefreshed.lib.guava'
+    relocate 'org.aopalliance', 'com.github.Reddishye.tachyonRefreshed.lib.aopalliance'
+    relocate 'javax.inject', 'com.github.Reddishye.tachyonRefreshed.lib.javax.inject'
     
     // Minimize the jar to remove unused classes
     minimize()
