@@ -51,7 +51,7 @@ publishing {
 }
 
 shadowJar {
-    archiveBaseName.set('Tachyon')
+    archiveBaseName.set('TachyonRefreshed')
     archiveClassifier.set('')
     archiveVersion.set('')
     relocate 'io.github.retrooper.packetevents', 'es.redactado.tachyonRefreshed.lib.packetevents'
@@ -64,4 +64,8 @@ tasks.withType(JavaCompile) {
 
 tasks.withType(Javadoc) {
     options.encoding = 'UTF-8'
+}
+
+artifacts {
+    archives shadowJar
 }
