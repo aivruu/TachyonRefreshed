@@ -4,9 +4,9 @@
 [versions]
 org-jetbrains-annotations = "24.1.0"
 org-junit-jupiter-junit-jupiter-engine = "5.10.2"
-io-papermc-paper-api = "1.21.4-R0.1-SNAPSHOT"
+org-spigotmc-spigot-api = "1.21.4-R0.1-SNAPSHOT"
 
 [libraries]
 org-jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "org-jetbrains-annotations" }
 org-junit-jupiter-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "org-junit-jupiter-junit-jupiter-engine" }
-io-papermc-paper-api = { module = "io.papermc.paper:paper-api", version.ref = "io-papermc-paper-api" }
+org-spigotmc-spigot-api = { module = "org.spigotmc:spigot-api", version.ref = "org-spigotmc-spigot-api" }
