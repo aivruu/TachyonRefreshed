@@ -44,12 +44,17 @@ java.sourceCompatibility = JavaVersion.VERSION_21
 
 publishing {
     publications {
-        maven(MavenPublication) {
-            from(components.java)
+        release(MavenPublication) {
+            groupId = 'com.github.Reddishye'
+            artifactId = 'TachyonRefreshed'
+            version = version
+
+            afterEvaluate {
+                from components.release
+            }
         }
     }
 }
-
 shadowJar {
     archiveBaseName.set('Tachyon')
     archiveClassifier.set('')

@@ -281,6 +281,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Credits
 - [BlockChanger](https://github.com/TheGaming999/BlockChanger) by TheGaming999 - For block manipulation utilities
+- [Resonos](https://github.com/Resonos) - For the original Tachyon library
 
 ## 🔄 Version History
 
@@ -289,6 +290,3 @@ See [CHANGELOG.md](CHANGELOG.md) for a list of changes.
 ## 🎯 Roadmap
 - [ ] Add version info for schematics
 - [ ] Fix block rotations
-- [ ] Add block data manipulation
-- [ ] Support for entities
-- [ ] Biome copying
