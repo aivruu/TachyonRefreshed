@@ -46,6 +46,9 @@ java {
 publishing {
     publications {
         maven(MavenPublication) {
+            groupId = 'com.github.Reddishye'
+            artifactId = 'TachyonRefreshed'
+            version = project.version
             from components.java
         }
     }
