@@ -18,9 +18,8 @@ repositories {
     maven {
         url = uri('https://jitpack.io')
     }
-    maven {
-        url = uri("https://repo.codemc.io/repository/maven-snapshots/")
-    }
+    maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
+    maven { url = uri("https://repo.codemc.io/repository/maven-snapshots/") }
     maven {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
@@ -33,7 +32,7 @@ repositories {
 dependencies {
     api libs.org.jetbrains.annotations
     compileOnly libs.org.spigotmc.spigot.api
-    implementation 'com.github.retrooper.packetevents:spigot:2.2.0'
+    implementation 'com.github.retrooper:packetevents-spigot:2.7.0'
     implementation 'com.google.inject:guice:7.0.0'
     implementation 'com.google.inject.extensions:guice-assistedinject:7.0.0'
 }
@@ -94,9 +93,6 @@ shadowJar {
     relocate 'com.google.common', 'com.github.Reddishye.tachyonRefreshed.lib.guava'
     relocate 'org.aopalliance', 'com.github.Reddishye.tachyonRefreshed.lib.aopalliance'
     relocate 'javax.inject', 'com.github.Reddishye.tachyonRefreshed.lib.javax.inject'
-    
-    // Minimize the jar to remove unused classes
-    minimize()
 }
 
 tasks.withType(JavaCompile) {

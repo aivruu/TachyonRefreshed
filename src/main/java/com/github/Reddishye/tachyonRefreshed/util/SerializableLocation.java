@@ -5,15 +5,16 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class SerializableLocation implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final String worldName;
-    private final double x;
-    private final double y;
-    private final double z;
-    private final float yaw;
-    private final float pitch;
+    private String worldName;
+    private double x;
+    private double y;
+    private double z;
+    private float yaw;
+    private float pitch;
 
     public SerializableLocation(String worldName, double x, double y, double z, float yaw, float pitch) {
         this.worldName = worldName;
@@ -45,52 +46,71 @@ public class SerializableLocation implements Serializable {
         return worldName;
     }
 
+    public void setWorldName(String worldName) {
+        this.worldName = worldName;
+    }
+
     public double getX() {
         return x;
+    }
+
+    public void setX(double x) {
+        this.x = x;
     }
 
     public double getY() {
         return y;
     }
 
+    public void setY(double y) {
+        this.y = y;
+    }
+
     public double getZ() {
         return z;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
     }
 
     public float getYaw() {
         return yaw;
     }
 
+    public void setYaw(float yaw) {
+        this.yaw = yaw;
+    }
+
     public float getPitch() {
         return pitch;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((worldName == null) ? 0 : worldName.hashCode());
-        long temp;
-        temp = Double.doubleToLongBits(x);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(y);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(z);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        return result;
+    public void setPitch(float pitch) {
+        this.pitch = pitch;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        SerializableLocation other = (SerializableLocation) obj;
-        if (worldName == null) {
-            if (other.worldName != null) return false;
-        } else if (!worldName.equals(other.worldName)) return false;
-        if (Double.doubleToLongBits(x) != Double.doubleToLongBits(other.x)) return false;
-        if (Double.doubleToLongBits(y) != Double.doubleToLongBits(other.y)) return false;
-        if (Double.doubleToLongBits(z) != Double.doubleToLongBits(other.z)) return false;
-        return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SerializableLocation that = (SerializableLocation) o;
+        return Double.compare(that.x, x) == 0 &&
+               Double.compare(that.y, y) == 0 &&
+               Double.compare(that.z, z) == 0 &&
+               Float.compare(that.yaw, yaw) == 0 &&
+               Float.compare(that.pitch, pitch) == 0 &&
+               Objects.equals(worldName, that.worldName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(worldName, x, y, z, yaw, pitch);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("SerializableLocation{world=%s, x=%.2f, y=%.2f, z=%.2f, yaw=%.2f, pitch=%.2f}",
+            worldName, x, y, z, yaw, pitch);
     }
 }

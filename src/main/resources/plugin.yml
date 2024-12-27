@@ -1,7 +1,0 @@
-name: TachyonRefreshed
-version: '1.0'
-main: com.github.Reddishye.tachyonRefreshed.TachyonLibrary
-api-version: '1.21'
-description: A high-performance schematic library using PacketEvents and Guice
-author: Redactado
-website: https://github.com/redactado/Tachyon-paper

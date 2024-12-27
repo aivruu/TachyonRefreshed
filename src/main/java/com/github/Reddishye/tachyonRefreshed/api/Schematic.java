@@ -49,6 +49,8 @@ public interface Schematic {
      */
     CompletableFuture<Void> pasteAsync(Location location, boolean ignoreAir);
 
+    void pasteSync(Location pasteLocation, boolean ignoreAir);
+
     /**
      * Saves the schematic to a file.
      *

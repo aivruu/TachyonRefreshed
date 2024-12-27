@@ -5,9 +5,11 @@ import com.google.inject.Singleton;
 import com.github.Reddishye.tachyonRefreshed.api.Schematic;
 import com.github.Reddishye.tachyonRefreshed.api.SchematicService;
 import com.github.Reddishye.tachyonRefreshed.packet.BlockChangePacketSender;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.data.BlockData;
 
-import java.io.File;
+import java.io.*;
 import java.util.concurrent.CompletableFuture;
 
 @Singleton
@@ -21,14 +23,14 @@ public class TachyonSchematicService implements SchematicService {
 
     @Override
     public CompletableFuture<Schematic> createSchematicAsync(Location start, Location end, Location origin) {
-        return CompletableFuture.supplyAsync(() -> 
-            new TachyonSchematic(start, end, origin, packetSender)
+        return CompletableFuture.supplyAsync(() ->
+                new TachyonSchematic(start, end, origin, packetSender)
         );
     }
 
     @Override
     public CompletableFuture<Schematic> loadSchematicAsync(File file) {
-        // TODO: Implement file loading
-        throw new UnsupportedOperationException("Loading from file not yet implemented");
+        return TachyonSchematic.loadAsync(file, null, packetSender);
     }
+
 }
