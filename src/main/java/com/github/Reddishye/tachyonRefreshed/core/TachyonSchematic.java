@@ -36,8 +36,7 @@ public class TachyonSchematic implements Schematic {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            RelativeBlock that = (RelativeBlock) o;
+            if (!(o instanceof RelativeBlock that)) return false;
             return x == that.x && y == that.y && z == that.z;
         }
 
