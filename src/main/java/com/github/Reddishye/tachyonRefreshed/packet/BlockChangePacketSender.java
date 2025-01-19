@@ -8,45 +8,30 @@ import com.google.inject.Singleton;
 import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 @Singleton
 public class BlockChangePacketSender {
-
     public void sendBlockChanges(List<Location> locations, Map<Location, BlockData> blocks) {
-        locations.forEach(location -> {
-            BlockData blockData = blocks.get(location);
-
-            if (blockData != null) {
-                Vector3i position = new Vector3i(
-                        location.getBlockX(),
-                        location.getBlockY(),
-                        location.getBlockZ()
-                );
-
-                try {
-                    int blockStateId = WrappedBlockState.getByString(blockData.getAsString()).getGlobalId();
-
-                    WrapperPlayServerBlockChange packet = new WrapperPlayServerBlockChange(
-                            position,
-                            blockStateId
-                    );
-
-                    Bukkit.getOnlinePlayers().forEach(player -> {
-                        if (player.getWorld().equals(location.getWorld())) {
-                            PacketEvents.getAPI().getPlayerManager().sendPacket(player, packet);
-                        }
-                    });
-                } catch (Exception e) {
-                    Bukkit.getLogger().log(Level.WARNING,
-                            String.format("Failed to send block change packet for blockdata %s at %d,%d,%d: %s",
-                                    blockData.getAsString(), position.getX(), position.getY(), position.getZ(), e.getMessage()
-                            ), e);
+        BlockData blockData;
+        for (final Location location : locations) {
+            blockData = blocks.get(location);
+            if (blockData == null) {
+                return;
+            }
+            final WrapperPlayServerBlockChange packet = new WrapperPlayServerBlockChange(
+                    new Vector3i(location.getBlockX(), location.getBlockY(), location.getBlockZ()),
+                    WrappedBlockState.getByString(blockData.getAsString()).getGlobalId()
+            );
+            for (final Player player : Bukkit.getOnlinePlayers()) {
+                if (player.getWorld().getName().equals(location.getWorld().getName())) {
+                    PacketEvents.getAPI().getPlayerManager().sendPacket(player, packet);
                 }
             }
-        });
+            blockData = null;
+        }
     }
 }
