@@ -18,7 +18,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -47,11 +46,13 @@ public class TachyonSchematic implements Schematic {
         }
     }
 
-    private final Set<RelativeBlock> blocks = ConcurrentHashMap.newKeySet();
+//    private final Set<RelativeBlock> blocks = ConcurrentHashMap.newKeySet();
     private final BlockChangePacketSender packetSender;
     private final int width;
     private final int height;
     private final int length;
+    // Experimental, use array to reduce object-allocation.
+    private RelativeBlock[] blocks = new RelativeBlock[0];
 
     @AssistedInject
     public TachyonSchematic(
@@ -79,16 +80,18 @@ public class TachyonSchematic implements Schematic {
                 }
             }
         }
-        for (final Vector vec : coordinates) {
+        final int size = coordinates.size();
+        Vector vec;
+        for (int i = 0; i < size; i++) {
+            vec = coordinates.get(i);
             int vecX = vec.getBlockX();
             int vecY = vec.getBlockY();
             int vecZ = vec.getBlockZ();
-            blocks.add(new RelativeBlock(
+            this.blocks[i] = new RelativeBlock(
                     vecX - origin.getBlockX(),
                     vecY - origin.getBlockY(),
                     vecZ - origin.getBlockZ(),
-                    start.getWorld().getBlockData(vecX, vecY, vecZ)
-            ));
+                    start.getWorld().getBlockData(vecX, vecY, vecZ));
         }
     }
 
@@ -101,7 +104,7 @@ public class TachyonSchematic implements Schematic {
         final List<Location> locations = new ArrayList<>();
         final Map<Location, BlockData> blockChanges = new HashMap<>();
         Location location;
-        for (final RelativeBlock block : blocks) {
+        for (final RelativeBlock block : this.blocks) {
             if (ignoreAir && block.blockData.getMaterial() == Material.AIR) {
                 continue;
             }
@@ -125,9 +128,9 @@ public class TachyonSchematic implements Schematic {
                 out.writeInt(width);
                 out.writeInt(height);
                 out.writeInt(length);
-                out.writeInt(blocks.size());
+                out.writeInt(this.blocks.length);
 
-                for (RelativeBlock block : blocks) {
+                for (final RelativeBlock block : this.blocks) {
                     out.writeInt(block.x);
                     out.writeInt(block.y);
                     out.writeInt(block.z);
@@ -149,14 +152,13 @@ public class TachyonSchematic implements Schematic {
                 int length = in.readInt();
                 int blockCount = in.readInt();
 
-                Set<RelativeBlock> blocks = ConcurrentHashMap.newKeySet(blockCount);
+                final RelativeBlock[] blocks = new RelativeBlock[blockCount];
                 for (int i = 0; i < blockCount; i++) {
-                    blocks.add(new RelativeBlock(
+                    blocks[i] = new RelativeBlock(
                             in.readInt(),
                             in.readInt(),
                             in.readInt(),
-                            Bukkit.createBlockData(in.readUTF())
-                    ));
+                            Bukkit.createBlockData(in.readUTF()));
                 }
 
                 return new TachyonSchematic(blocks, width, height, length, packetSender);
@@ -168,12 +170,12 @@ public class TachyonSchematic implements Schematic {
     }
 
     private TachyonSchematic(
-            Set<RelativeBlock> blocks,
+            RelativeBlock[] blocks,
             int width,
             int height,
             int length,
             BlockChangePacketSender packetSender) {
-        this.blocks.addAll(blocks);
+        this.blocks = blocks;
         this.width = width;
         this.height = height;
         this.length = length;
@@ -194,10 +196,12 @@ public class TachyonSchematic implements Schematic {
         if (rotation == null) {
             return;
         }
-        Set<RelativeBlock> rotatedBlocks = ConcurrentHashMap.newKeySet();
-        for (final RelativeBlock block : this.blocks) {
+        BlockData rotatedData;
+        RelativeBlock block;
+        for (int i = 0; i < this.blocks.length; i++) {
             int newX;
             int newZ;
+            block = this.blocks[i];
             switch (rotation) {
                 case CLOCKWISE_90 -> {
                     newX = -block.z;
@@ -217,13 +221,10 @@ public class TachyonSchematic implements Schematic {
                     newZ = block.x;
                 }
             }
-            final BlockData rotatedData = block.blockData.clone();
+            rotatedData = block.blockData.clone();
             rotatedData.rotate(rotation);
-            rotatedBlocks.add(new RelativeBlock(newX, block.y, newZ, rotatedData));
+            this.blocks[i] = new RelativeBlock(newX, block.y, newZ, rotatedData);
         }
-
-        blocks.clear();
-        blocks.addAll(rotatedBlocks);
     }
 
     @Override
@@ -248,23 +249,26 @@ public class TachyonSchematic implements Schematic {
             case UP, DOWN, LEFT, RIGHT -> Mirror.LEFT_RIGHT;
             case NORTH, SOUTH -> Mirror.FRONT_BACK;
         };
-        Set<RelativeBlock> flippedBlocks = ConcurrentHashMap.newKeySet();
         BlockData flippedData;
-        for (final RelativeBlock block : blocks) {
-            int originalX = (direction == FlipDirection.LEFT || direction == FlipDirection.RIGHT) ? -block.x : block.x;
-            int originalY = (direction == FlipDirection.UP || direction == FlipDirection.DOWN) ? -block.y : block.y;
-            int originalZ = (direction == FlipDirection.NORTH || direction == FlipDirection.SOUTH) ? -block.z : block.z;
+        RelativeBlock block;
+        for (int i = 0; i < this.blocks.length; i++) {
+            block = this.blocks[i];
+            int newX = block.x;
+            int newY = block.y;
+            int newZ = block.z;
+            switch (direction) {
+                case LEFT, RIGHT -> newX = -block.x;
+                case UP, DOWN -> newY = -block.y;
+                case NORTH, SOUTH -> newZ = -block.z;
+            }
             flippedData = block.blockData.clone();
             flippedData.mirror(mirror);
-            flippedBlocks.add(new RelativeBlock(originalX, originalY, originalZ, flippedData));
+            this.blocks[i] = new RelativeBlock(newX, newY, newZ, flippedData);
         }
-
-        blocks.clear();
-        blocks.addAll(flippedBlocks);
     }
 
     @Override
     public int getBlockCount() {
-        return blocks.size();
+        return this.blocks.length;
     }
 }
