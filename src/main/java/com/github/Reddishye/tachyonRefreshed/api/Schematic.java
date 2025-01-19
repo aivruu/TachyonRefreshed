@@ -1,5 +1,6 @@
 package com.github.Reddishye.tachyonRefreshed.api;
 
+import com.github.Reddishye.tachyonRefreshed.core.direction.FlipDirection;
 import org.bukkit.Location;
 
 import java.io.File;
@@ -73,8 +74,17 @@ public interface Schematic {
      * Flips the schematic in the specified direction.
      *
      * @param direction The direction to flip ("up", "down", "left", "right")
+     * @deprecated in favour of {@link #flip(FlipDirection)}
      */
+    @Deprecated
     void flip(String direction);
+
+    /**
+     * Flips the schematic in the specified direction.
+     *
+     * @param direction The {@link FlipDirection} to flip.
+     */
+    void flip(FlipDirection direction);
 
     /**
      * Gets the number of blocks in this schematic.
