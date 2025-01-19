@@ -1,5 +1,6 @@
 package com.github.Reddishye.tachyonRefreshed.core;
 
+import com.github.Reddishye.tachyonRefreshed.core.direction.FlipDirection;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.github.Reddishye.tachyonRefreshed.api.Schematic;
@@ -78,13 +79,10 @@ public class TachyonSchematic implements Schematic {
                 }
             }
         }
-        int vecX;
-        int vecY;
-        int vecZ;
         for (final Vector vec : coordinates) {
-            vecX = vec.getBlockX();
-            vecY = vec.getBlockY();
-            vecZ = vec.getBlockZ();
+            int vecX = vec.getBlockX();
+            int vecY = vec.getBlockY();
+            int vecZ = vec.getBlockZ();
             blocks.add(new RelativeBlock(
                     vecX - origin.getBlockX(),
                     vecY - origin.getBlockY(),
@@ -102,13 +100,14 @@ public class TachyonSchematic implements Schematic {
     private void notifyBlockChanges(final Location pasteLocation, final boolean ignoreAir) {
         final List<Location> locations = new ArrayList<>();
         final Map<Location, BlockData> blockChanges = new HashMap<>();
+        Location location;
         for (final RelativeBlock block : blocks) {
             if (ignoreAir && block.blockData.getMaterial() == Material.AIR) {
                 continue;
             }
-            final Location loc = block.toAbsolute(pasteLocation);
-            locations.add(loc);
-            blockChanges.put(loc, block.blockData);
+            location = block.toAbsolute(pasteLocation);
+            locations.add(location);
+            blockChanges.put(location, block.blockData);
         }
         packetSender.sendBlockChanges(locations, blockChanges);
     }
@@ -196,9 +195,9 @@ public class TachyonSchematic implements Schematic {
             return;
         }
         Set<RelativeBlock> rotatedBlocks = ConcurrentHashMap.newKeySet();
-        int newX;
-        int newZ;
         for (final RelativeBlock block : this.blocks) {
+            int newX;
+            int newZ;
             switch (rotation) {
                 case CLOCKWISE_90 -> {
                     newX = -block.z;
@@ -212,6 +211,7 @@ public class TachyonSchematic implements Schematic {
                     newX = block.z;
                     newZ = -block.x;
                 }
+                // 'NONE' enum-constant reaching.
                 default -> {
                     newX = block.z;
                     newZ = block.x;
@@ -227,32 +227,34 @@ public class TachyonSchematic implements Schematic {
     }
 
     @Override
+    @Deprecated
     public void flip(@NotNull String direction) {
-        // Avoid repeated to lower-case conversion.
-        direction = direction.toLowerCase(Locale.ROOT);
-
-        final Mirror mirror = switch (direction) {
-            case "up", "down", "left", "right" -> Mirror.LEFT_RIGHT;
-            case "north", "south" -> Mirror.FRONT_BACK;
-            default -> Mirror.NONE;
-        };
-        if (mirror == Mirror.NONE) {
+        FlipDirection flipDirection;
+        try {
+            flipDirection = FlipDirection.valueOf(direction.toUpperCase(Locale.ROOT));
+        } catch (final IllegalArgumentException exception) {
+            flipDirection = null;
+        }
+        if (flipDirection == null) {
+            LOGGER.severe("Invalid flip-direction value provided for conversion: " + direction);
             return;
         }
+        flip(flipDirection);
+    }
+
+    @Override
+    public void flip(@NotNull FlipDirection direction) {
+        final Mirror mirror = switch (direction) {
+            case UP, DOWN, LEFT, RIGHT -> Mirror.LEFT_RIGHT;
+            case NORTH, SOUTH -> Mirror.FRONT_BACK;
+        };
         Set<RelativeBlock> flippedBlocks = ConcurrentHashMap.newKeySet();
-        int originalX;
-        int originalY;
-        int originalZ;
+        BlockData flippedData;
         for (final RelativeBlock block : blocks) {
-            originalX = block.x;
-            originalY = block.y;
-            originalZ = block.z;
-            switch (direction) {
-                case "up", "down" -> originalY = -originalY;
-                case "left", "right" -> originalX = -originalX;
-                case "north", "south" -> originalZ = -originalZ;
-            }
-            BlockData flippedData = block.blockData.clone();
+            int originalX = (direction == FlipDirection.LEFT || direction == FlipDirection.RIGHT) ? -block.x : block.x;
+            int originalY = (direction == FlipDirection.UP || direction == FlipDirection.DOWN) ? -block.y : block.y;
+            int originalZ = (direction == FlipDirection.NORTH || direction == FlipDirection.SOUTH) ? -block.z : block.z;
+            flippedData = block.blockData.clone();
             flippedData.mirror(mirror);
             flippedBlocks.add(new RelativeBlock(originalX, originalY, originalZ, flippedData));
         }
