@@ -6,37 +6,31 @@ import com.github.Reddishye.tachyonRefreshed.api.Schematic;
 import com.github.Reddishye.tachyonRefreshed.packet.BlockChangePacketSender;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
+import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.Bisected;
 import org.bukkit.block.structure.Mirror;
 import org.bukkit.block.structure.StructureRotation;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import static org.bukkit.block.structure.StructureRotation.*;
-
 public class TachyonSchematic implements Schematic {
-    private static class RelativeBlock implements Serializable {
-        private final int x, y, z;
-        private final BlockData blockData;
+    private static final Logger LOGGER = Logger.getLogger("TachyonRefreshed");
 
-        public RelativeBlock(int x, int y, int z, BlockData blockData) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.blockData = blockData.clone();
-        }
-
+    private record RelativeBlock(int x, int y, int z, BlockData blockData) implements Serializable {
         public Location toAbsolute(Location origin) {
-            return origin.clone().add(x, y, z);
+            return new Location(
+                    origin.getWorld(), origin.getBlockX(), origin.getBlockY(), origin.getBlockZ(),
+                    origin.getYaw(), origin.getPitch()
+            ).add(x, y, z);
         }
 
         @Override
@@ -55,7 +49,9 @@ public class TachyonSchematic implements Schematic {
 
     private final Set<RelativeBlock> blocks = ConcurrentHashMap.newKeySet();
     private final BlockChangePacketSender packetSender;
-    private final int width, height, length;
+    private final int width;
+    private final int height;
+    private final int length;
 
     @AssistedInject
     public TachyonSchematic(
@@ -71,66 +67,56 @@ public class TachyonSchematic implements Schematic {
     }
 
     private void copyBlocks(Location start, Location end, Location origin) {
-        int minX = Math.min(start.getBlockX(), end.getBlockX());
-        int minY = Math.min(start.getBlockY(), end.getBlockY());
-        int minZ = Math.min(start.getBlockZ(), end.getBlockZ());
         int maxX = Math.max(start.getBlockX(), end.getBlockX());
         int maxY = Math.max(start.getBlockY(), end.getBlockY());
         int maxZ = Math.max(start.getBlockZ(), end.getBlockZ());
 
         List<Vector> coordinates = new ArrayList<>();
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                for (int z = minZ; z <= maxZ; z++) {
+        for (int x = Math.min(start.getBlockX(), end.getBlockX()); x <= maxX; x++) {
+            for (int y = Math.min(start.getBlockY(), end.getBlockY()); y <= maxY; y++) {
+                for (int z = Math.min(start.getBlockZ(), end.getBlockZ()); z <= maxZ; z++) {
                     coordinates.add(new Vector(x, y, z));
                 }
             }
         }
-
-        coordinates.parallelStream().forEach(vec -> {
-            Location loc = vec.toLocation(start.getWorld());
-            Block block = loc.getBlock();
+        int vecX;
+        int vecY;
+        int vecZ;
+        for (final Vector vec : coordinates) {
+            vecX = vec.getBlockX();
+            vecY = vec.getBlockY();
+            vecZ = vec.getBlockZ();
             blocks.add(new RelativeBlock(
-                    vec.getBlockX() - origin.getBlockX(),
-                    vec.getBlockY() - origin.getBlockY(),
-                    vec.getBlockZ() - origin.getBlockZ(),
-                    block.getBlockData()
+                    vecX - origin.getBlockX(),
+                    vecY - origin.getBlockY(),
+                    vecZ - origin.getBlockZ(),
+                    start.getWorld().getBlockData(vecX, vecY, vecZ)
             ));
-        });
+        }
     }
 
     @Override
     public CompletableFuture<Void> pasteAsync(Location pasteLocation, boolean ignoreAir) {
-        return CompletableFuture.runAsync(() -> {
-            List<Location> locations = new ArrayList<>();
-            Map<Location, BlockData> blockChanges = new HashMap<>();
+        return CompletableFuture.runAsync(() -> this.notifyBlockChanges(pasteLocation, ignoreAir));
+    }
 
-            blocks.stream()
-                    .filter(block -> !ignoreAir || !block.blockData.getMaterial().isAir())
-                    .forEach(block -> {
-                        Location loc = block.toAbsolute(pasteLocation);
-                        locations.add(loc);
-                        blockChanges.put(loc, block.blockData);
-                    });
-
-            packetSender.sendBlockChanges(locations, blockChanges);
-        });
+    private void notifyBlockChanges(final Location pasteLocation, final boolean ignoreAir) {
+        final List<Location> locations = new ArrayList<>();
+        final Map<Location, BlockData> blockChanges = new HashMap<>();
+        for (final RelativeBlock block : blocks) {
+            if (ignoreAir && block.blockData.getMaterial() == Material.AIR) {
+                continue;
+            }
+            final Location loc = block.toAbsolute(pasteLocation);
+            locations.add(loc);
+            blockChanges.put(loc, block.blockData);
+        }
+        packetSender.sendBlockChanges(locations, blockChanges);
     }
 
     @Override
     public void pasteSync(Location pasteLocation, boolean ignoreAir) {
-        List<Location> locations = new ArrayList<>();
-        Map<Location, BlockData> blockChanges = new HashMap<>();
-
-        blocks.stream()
-                .filter(block -> !ignoreAir || !block.blockData.getMaterial().isAir())
-                .forEach(block -> {
-                    Location loc = block.toAbsolute(pasteLocation);
-                    locations.add(loc);
-                    blockChanges.put(loc, block.blockData);
-                });
-
-        packetSender.sendBlockChanges(locations, blockChanges);
+        this.notifyBlockChanges(pasteLocation, ignoreAir);
     }
 
     @Override
@@ -149,16 +135,13 @@ public class TachyonSchematic implements Schematic {
                     out.writeInt(block.z);
                     out.writeUTF(block.blockData.getAsString());
                 }
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to save schematic", e);
+            } catch (final IOException exception) {
+                LOGGER.severe("Failed to load schematic, check by corrupt-data or file syntax-invalid.");
             }
         });
     }
 
-    public static CompletableFuture<Schematic> loadAsync(
-            File file,
-            Location origin,
-            BlockChangePacketSender packetSender) {
+    public static CompletableFuture<@Nullable Schematic> loadAsync(File file, BlockChangePacketSender packetSender) {
         return CompletableFuture.supplyAsync(() -> {
             try (DataInputStream in = new DataInputStream(
                     new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))))) {
@@ -169,7 +152,6 @@ public class TachyonSchematic implements Schematic {
                 int blockCount = in.readInt();
 
                 Set<RelativeBlock> blocks = ConcurrentHashMap.newKeySet(blockCount);
-
                 for (int i = 0; i < blockCount; i++) {
                     blocks.add(new RelativeBlock(
                             in.readInt(),
@@ -180,8 +162,9 @@ public class TachyonSchematic implements Schematic {
                 }
 
                 return new TachyonSchematic(blocks, width, height, length, packetSender);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to load schematic", e);
+            } catch (final IOException exception) {
+                LOGGER.severe("Failed to load schematic, check by corrupt-data or file syntax-invalid.");
+                return null;
             }
         });
     }
@@ -204,106 +187,76 @@ public class TachyonSchematic implements Schematic {
         angle = angle % 360;
         if (angle < 0) angle += 360;
 
-        StructureRotation rotation;
-        if (angle == 90) rotation = StructureRotation.CLOCKWISE_90;
-        else if (angle == 180) rotation = StructureRotation.CLOCKWISE_180;
-        else if (angle == 270) rotation = StructureRotation.COUNTERCLOCKWISE_90;
-        else return;
-
+        final StructureRotation rotation = switch ((int) angle) {
+            case 90 -> StructureRotation.CLOCKWISE_90;
+            case 180 -> StructureRotation.CLOCKWISE_180;
+            case 270 -> StructureRotation.COUNTERCLOCKWISE_90;
+            default -> null;
+        };
+        if (rotation == null) {
+            return;
+        }
         Set<RelativeBlock> rotatedBlocks = ConcurrentHashMap.newKeySet();
-
-        blocks.forEach(block -> {
-            double x = block.x;
-            double z = block.z;
-
-            int newX, newZ;
+        int newX;
+        int newZ;
+        for (final RelativeBlock block : this.blocks) {
             switch (rotation) {
-                case CLOCKWISE_90:
-                    newX = (int) -z;
-                    newZ = (int) x;
-                    break;
-                case CLOCKWISE_180:
-                    newX = (int) -x;
-                    newZ = (int) -z;
-                    break;
-                case COUNTERCLOCKWISE_90:
-                    newX = (int) z;
-                    newZ = (int) -x;
-                    break;
-                default:
-                    newX = (int) x;
-                    newZ = (int) z;
+                case CLOCKWISE_90 -> {
+                    newX = -block.z;
+                    newZ = block.x;
+                }
+                case CLOCKWISE_180 -> {
+                    newX = -block.z;
+                    newZ = -block.x;
+                }
+                case COUNTERCLOCKWISE_90 -> {
+                    newX = block.z;
+                    newZ = -block.x;
+                }
+                default -> {
+                    newX = block.z;
+                    newZ = block.x;
+                }
             }
-
-            BlockData rotatedData = block.blockData.clone();
+            final BlockData rotatedData = block.blockData.clone();
             rotatedData.rotate(rotation);
-
-            rotatedBlocks.add(new RelativeBlock(
-                    newX,
-                    block.y,
-                    newZ,
-                    rotatedData
-            ));
-        });
+            rotatedBlocks.add(new RelativeBlock(newX, block.y, newZ, rotatedData));
+        }
 
         blocks.clear();
         blocks.addAll(rotatedBlocks);
     }
 
     @Override
-    public void flip(String direction) {
-        if (direction == null) {
-            throw new IllegalArgumentException("Direction cannot be null");
-        }
+    public void flip(@NotNull String direction) {
+        // Avoid repeated to lower-case conversion.
+        direction = direction.toLowerCase(Locale.ROOT);
 
+        final Mirror mirror = switch (direction) {
+            case "up", "down", "left", "right" -> Mirror.LEFT_RIGHT;
+            case "north", "south" -> Mirror.FRONT_BACK;
+            default -> Mirror.NONE;
+        };
+        if (mirror == Mirror.NONE) {
+            return;
+        }
         Set<RelativeBlock> flippedBlocks = ConcurrentHashMap.newKeySet();
-        Mirror mirror;
-
-        switch (direction.toLowerCase()) {
-            case "up":
-            case "down":
-            case "left":
-            case "right":
-                mirror = Mirror.LEFT_RIGHT;
-                break;
-            case "north":
-            case "south":
-                mirror = Mirror.FRONT_BACK;
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid flip direction: " + direction);
-        }
-
-        blocks.forEach(block -> {
-            int newX = block.x;
-            int newY = block.y;
-            int newZ = block.z;
-
-            switch (direction.toLowerCase()) {
-                case "up":
-                case "down":
-                    newY = -newY;
-                    break;
-                case "left":
-                case "right":
-                    newX = -newX;
-                    break;
-                case "north":
-                case "south":
-                    newZ = -newZ;
-                    break;
+        int originalX;
+        int originalY;
+        int originalZ;
+        for (final RelativeBlock block : blocks) {
+            originalX = block.x;
+            originalY = block.y;
+            originalZ = block.z;
+            switch (direction) {
+                case "up", "down" -> originalY = -originalY;
+                case "left", "right" -> originalX = -originalX;
+                case "north", "south" -> originalZ = -originalZ;
             }
-
             BlockData flippedData = block.blockData.clone();
             flippedData.mirror(mirror);
-
-            flippedBlocks.add(new RelativeBlock(
-                    newX,
-                    newY,
-                    newZ,
-                    flippedData
-            ));
-        });
+            flippedBlocks.add(new RelativeBlock(originalX, originalY, originalZ, flippedData));
+        }
 
         blocks.clear();
         blocks.addAll(flippedBlocks);
