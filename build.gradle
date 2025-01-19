@@ -38,7 +38,7 @@ dependencies {
 }
 
 group = 'com.github.Reddishye'
-version = '1.0'
+version = '1.1.4'
 description = 'TachyonRefreshed'
 java.sourceCompatibility = JavaVersion.VERSION_21
 
@@ -53,19 +53,19 @@ publishing {
             project.shadow.component(publication)
             artifactId = 'TachyonRefreshed'
             version = project.version
-            
+
             pom {
                 name = 'TachyonRefreshed'
                 description = 'A high-performance schematic library for Minecraft'
                 url = 'https://github.com/redactado/Tachyon-paper'
-                
+
                 licenses {
                     license {
                         name = 'MIT License'
                         url = 'https://opensource.org/licenses/MIT'
                     }
                 }
-                
+
                 developers {
                     developer {
                         id = 'redactado'
@@ -76,6 +76,7 @@ publishing {
         }
     }
 }
+
 
 wrapper {
     gradleVersion = "8.10"
