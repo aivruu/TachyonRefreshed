@@ -9,6 +9,9 @@ import java.util.concurrent.CompletableFuture;
  * Represents the public API for working with schematics.
  */
 public interface Schematic {
+    /** Represents the extension used for the schematic-files. */
+    String FILE_EXTENSION = ".tachyon";
+
     /**
      * Creates a new schematic by copying blocks between two locations.
      *
@@ -37,7 +40,7 @@ public interface Schematic {
      * @return The file extension including the dot
      */
     static String getFileExtension() {
-        return ".tachyon";
+        return FILE_EXTENSION;
     }
 
     /**
