@@ -52,7 +52,7 @@ public class TachyonSchematic implements Schematic {
     private final int height;
     private final int length;
     // Experimental, use array to reduce object-allocation.
-    private RelativeBlock[] blocks = new RelativeBlock[0];
+    private RelativeBlock[] block;
 
     @AssistedInject
     public TachyonSchematic(
@@ -64,7 +64,7 @@ public class TachyonSchematic implements Schematic {
         this.width = Math.abs(end.getBlockX() - start.getBlockX()) + 1;
         this.height = Math.abs(end.getBlockY() - start.getBlockY()) + 1;
         this.length = Math.abs(end.getBlockZ() - start.getBlockZ()) + 1;
-        copyBlocks(start, end, origin);
+        this.copyBlocks(start, end, origin);
     }
 
     private void copyBlocks(Location start, Location end, Location origin) {
@@ -81,6 +81,7 @@ public class TachyonSchematic implements Schematic {
             }
         }
         final int size = coordinates.size();
+        this.blocks = new RelativeBlock[size];
         Vector vec;
         for (int i = 0; i < size; i++) {
             vec = coordinates.get(i);
