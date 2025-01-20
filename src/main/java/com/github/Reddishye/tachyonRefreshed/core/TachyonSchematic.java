@@ -52,7 +52,7 @@ public class TachyonSchematic implements Schematic {
     private final int height;
     private final int length;
     // Experimental, use array to reduce object-allocation.
-    private RelativeBlock[] block;
+    private RelativeBlock[] blocks;
 
     @AssistedInject
     public TachyonSchematic(
@@ -80,10 +80,9 @@ public class TachyonSchematic implements Schematic {
                 }
             }
         }
-        final int size = coordinates.size();
-        this.blocks = new RelativeBlock[size];
+        this.blocks = new RelativeBlock[coordinates.size()];
         Vector vec;
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < this.blocks.length; i++) {
             vec = coordinates.get(i);
             int vecX = vec.getBlockX();
             int vecY = vec.getBlockY();
@@ -98,12 +97,26 @@ public class TachyonSchematic implements Schematic {
 
     @Override
     public CompletableFuture<Void> pasteAsync(Location pasteLocation, boolean ignoreAir) {
-        return CompletableFuture.runAsync(() -> this.notifyBlockChanges(pasteLocation, ignoreAir));
+        return CompletableFuture.runAsync(() -> this.notifyBlockChanges(pasteLocation, ignoreAir, true));
     }
 
-    private void notifyBlockChanges(final Location pasteLocation, final boolean ignoreAir) {
+    private void notifyBlockChanges(final Location pasteLocation, final boolean ignoreAir, final boolean async) {
         final List<Location> locations = new ArrayList<>();
         final Map<Location, BlockData> blockChanges = new HashMap<>();
+        if (async) {
+            synchronized (this.blocks) {
+                this.prepareBlocksForUpdate(locations, blockChanges, pasteLocation, ignoreAir);
+            }
+        } else {
+            this.prepareBlocksForUpdate(locations, blockChanges, pasteLocation, ignoreAir);
+        }
+        packetSender.sendBlockChanges(locations, blockChanges);
+    }
+
+    private void prepareBlocksForUpdate(
+            final List<Location> locations, final Map<Location, BlockData> blockChanges,
+            final Location pasteLocation, final boolean ignoreAir
+    ) {
         Location location;
         for (final RelativeBlock block : this.blocks) {
             if (ignoreAir && block.blockData.getMaterial() == Material.AIR) {
@@ -113,12 +126,11 @@ public class TachyonSchematic implements Schematic {
             locations.add(location);
             blockChanges.put(location, block.blockData);
         }
-        packetSender.sendBlockChanges(locations, blockChanges);
     }
 
     @Override
     public void pasteSync(Location pasteLocation, boolean ignoreAir) {
-        this.notifyBlockChanges(pasteLocation, ignoreAir);
+        this.notifyBlockChanges(pasteLocation, ignoreAir, false);
     }
 
     @Override
@@ -131,11 +143,13 @@ public class TachyonSchematic implements Schematic {
                 out.writeInt(length);
                 out.writeInt(this.blocks.length);
 
-                for (final RelativeBlock block : this.blocks) {
-                    out.writeInt(block.x);
-                    out.writeInt(block.y);
-                    out.writeInt(block.z);
-                    out.writeUTF(block.blockData.getAsString());
+                synchronized (this.blocks) {
+                    for (final RelativeBlock block : this.blocks) {
+                        out.writeInt(block.x);
+                        out.writeInt(block.y);
+                        out.writeInt(block.z);
+                        out.writeUTF(block.blockData.getAsString());
+                    }
                 }
             } catch (final IOException exception) {
                 LOGGER.severe("Failed to load schematic, check by corrupt-data or file syntax-invalid.");
@@ -241,7 +255,7 @@ public class TachyonSchematic implements Schematic {
             LOGGER.severe("Invalid flip-direction value provided for conversion: " + direction);
             return;
         }
-        flip(flipDirection);
+        this.flip(flipDirection);
     }
 
     @Override
