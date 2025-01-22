@@ -13,23 +13,23 @@ import java.util.concurrent.CompletableFuture;
 
 @Singleton
 public class TachyonSchematicService implements SchematicService {
-    private final BlockChangePacketSender packetSender;
+  private final BlockChangePacketSender packetSender;
 
-    @Inject
-    public TachyonSchematicService(BlockChangePacketSender packetSender) {
-        this.packetSender = packetSender;
-    }
+  @Inject
+  public TachyonSchematicService(BlockChangePacketSender packetSender) {
+    this.packetSender = packetSender;
+  }
 
-    @Override
-    public CompletableFuture<Schematic> createSchematicAsync(Location start, Location end, Location origin) {
-        return CompletableFuture.supplyAsync(() ->
-                new TachyonSchematic(start, end, origin, packetSender)
-        );
-    }
+  @Override
+  public CompletableFuture<Schematic> createSchematicAsync(Location start, Location end, Location origin) {
+    return CompletableFuture.supplyAsync(() ->
+      new TachyonSchematic(start, end, origin, packetSender)
+    );
+  }
 
-    @Override
-    public CompletableFuture<@Nullable Schematic> loadSchematicAsync(File file) {
-        return TachyonSchematic.loadAsync(file, packetSender);
-    }
+  @Override
+  public CompletableFuture<@Nullable Schematic> loadSchematicAsync(File file) {
+    return TachyonSchematic.loadAsync(file, packetSender);
+  }
 
 }

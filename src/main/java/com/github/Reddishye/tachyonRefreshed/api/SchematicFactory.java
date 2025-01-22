@@ -15,38 +15,38 @@ import java.util.concurrent.CompletableFuture;
  */
 @Singleton
 public class SchematicFactory {
-    private final SchematicService schematicService;
+  private final SchematicService schematicService;
 
-    @Inject
-    public SchematicFactory(SchematicService schematicService) {
-        this.schematicService = schematicService;
-    }
+  @Inject
+  public SchematicFactory(SchematicService schematicService) {
+    this.schematicService = schematicService;
+  }
 
-    public static SchematicFactory getInstance() {
-        return TachyonLibrary.getInstance().getInstance(SchematicFactory.class);
-    }
+  public static SchematicFactory getInstance() {
+    return TachyonLibrary.getInstance().getInstance(SchematicFactory.class);
+  }
 
-    public interface Create {
-        Schematic create(
-                @Assisted("start") Location start,
-                @Assisted("end") Location end,
-                @Assisted("origin") Location origin
-        );
-    }
+  public interface Create {
+    Schematic create(
+      @Assisted("start") Location start,
+      @Assisted("end") Location end,
+      @Assisted("origin") Location origin
+    );
+  }
 
-    public Schematic createSchematic(Location start, Location end, Location origin) {
-        return schematicService.createSchematicAsync(start, end, origin).join();
-    }
+  public Schematic createSchematic(Location start, Location end, Location origin) {
+    return schematicService.createSchematicAsync(start, end, origin).join();
+  }
 
-    public CompletableFuture<Schematic> loadSchematic(File file) {
-        return schematicService.loadSchematicAsync(file);
-    }
+  public CompletableFuture<Schematic> loadSchematic(File file) {
+    return schematicService.loadSchematicAsync(file);
+  }
 
-    public CompletableFuture<Schematic> createAsync(Location start, Location end, Location origin) {
-        return CompletableFuture.supplyAsync(() -> createSchematic(start, end, origin));
-    }
+  public CompletableFuture<Schematic> createAsync(Location start, Location end, Location origin) {
+    return CompletableFuture.supplyAsync(() -> createSchematic(start, end, origin));
+  }
 
-    public CompletableFuture<Schematic> createAsync(File file) {
-        return loadSchematic(file);
-    }
+  public CompletableFuture<Schematic> createAsync(File file) {
+    return loadSchematic(file);
+  }
 }
